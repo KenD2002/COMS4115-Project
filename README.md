@@ -1,4 +1,4 @@
-# COMS4156-Project
+# COMS4115-Project
 # Tiny General-Purpose Programming Language Interpreter
 
 ## Team Members
