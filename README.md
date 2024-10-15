@@ -75,7 +75,3 @@ The following are the token types in this language:
 - **WHITESPACE**: `\s+` (matches spaces, tabs, newlines, etc.)
 
 ---
-
-### 3. Comments
-- **COMMENT**: `//.*` (matches single-line comments)
-- **Example**: `// This is a comment`
