@@ -1,0 +1,8 @@
+make count assign 0;
+
+check (count less_than 5)
+{
+    shout "Count is: ";
+    shout count;
+    count assign count add 1;
+}
