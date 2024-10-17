@@ -1,0 +1,87 @@
+sample1.litel:
+
+<KEYWORD, make>
+<IDENTIFIER, x>
+<OPERATOR, =>
+<INTLITERAL, 10>
+<SEMICOLON, ;>
+<KEYWORD, shout>
+<STRINGLITERAL, "Hello World">
+<SEMICOLON, ;>
+<KEYWORD, if>
+<LPAR, (>
+<IDENTIFIER, x>
+<OPERATOR, <>
+<INTLITERAL, 20>
+<RPAR, )>
+<LBRACE, {>
+<KEYWORD, shout>
+<STRINGLITERAL, "x is less than 20">
+<SEMICOLON, ;>
+<RBRACE, }>
+
+
+sample2.litel:
+
+<KEYWORD, make>
+<IDENTIFIER, x>
+<OPERATOR, =>
+<INTLITERAL, 5>
+<SEMICOLON, ;>
+<KEYWORD, make>
+<IDENTIFIER, y>
+<OPERATOR, =>
+<INTLITERAL, 10>
+<SEMICOLON, ;>
+<KEYWORD, shout>
+<STRINGLITERAL, "The value of x is: ">
+<SEMICOLON, ;>
+<KEYWORD, shout>
+<IDENTIFIER, x>
+<SEMICOLON, ;>
+<KEYWORD, shout>
+<STRINGLITERAL, "The value of y is: ">
+<SEMICOLON, ;>
+<KEYWORD, shout>
+<IDENTIFIER, y>
+<SEMICOLON, ;>
+
+
+sample3.litel:
+
+<KEYWORD, make>
+<IDENTIFIER, count>
+<OPERATOR, =>
+<INTLITERAL, 0>
+<SEMICOLON, ;>
+<KEYWORD, check>
+<LPAR, (>
+<IDENTIFIER, count>
+<OPERATOR, <>
+<INTLITERAL, 5>
+<RPAR, )>
+<LBRACE, {>
+<KEYWORD, shout>
+<STRINGLITERAL, "Count is: ">
+<SEMICOLON, ;>
+<KEYWORD, shout>
+<IDENTIFIER, count>
+<SEMICOLON, ;>
+<IDENTIFIER, count>
+<OPERATOR, =>
+<IDENTIFIER, count>
+<OPERATOR, +>
+<INTLITERAL, 1>
+<SEMICOLON, ;>
+<RBRACE, }>
+
+
+sample4.litel:
+
+Lexical error: Unterminated string literal at position 90.
+
+
+sample5.litel:
+
+Lexical error: Invalid token starting with a number at position 14.
+Lexical error: Unterminated string literal at position 90.
