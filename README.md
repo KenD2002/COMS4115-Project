@@ -34,6 +34,7 @@ The following are the token types in this language:
 - `if` - Used to define conditional logic.
 - `else` - Provides an alternative block of code if the `if` condition fails.
 - `return` - Returns a value from a function.
+- `call` - Call and run the function
 
 ### 1.2. Identifiers
 - Regular Expression: `[a-zA-Z][a-zA-Z0-9]*`
@@ -70,7 +71,9 @@ The following are the token types in this language:
 - **LPAR**: `(` 
 - **RPAR**: `)` 
 - **LBRACE**: `{` 
-- **RBRACE**: `}` 
+- **RBRACE**: `}`
+- **LBRACKET**: `[`
+- **RBRACKET**: `]`
 - **SEMICOLON**: `;`
 - **COMMA**: `,` 
 
@@ -117,3 +120,138 @@ To output the result into a file, you can use `>` or  `>>` to redirect stdout by
 
 
 Example `.litel` files and their expected outputs are located in the `./tests/sample_programs` directory.
+
+
+## Parser
+
+### Context-Free Grammar (CFG)
+
+1. Program ::= StatementList
+2. StatementList ::= Statement  
+   | Statement StatementList
+3. Statement ::= VarDeclaration ';'  
+   | Assignment ';'  
+   | Output ';'  
+   | ReturnStatement ';'  
+   | FunctionCallStatement ';'  
+   | IfStatement  
+   | Loop  
+   | FunctionDef  
+   | ';'
+4. VarDeclaration ::= 'make' Identifier 'assign' Expression
+5. Assignment ::= Identifier 'assign' Expression
+6. FunctionDef ::= 'def' Identifier '(' ParameterList ')' Block
+7. ParameterList ::= ε  
+   | Identifier  
+   | Identifier ',' ParameterList
+8. Block ::= '{' StatementList '}'
+9. IfStatement ::= 'if' '(' Expression ')' Block ElseClause
+10. ElseClause ::= ε  
+    | 'else' Block
+11. Loop ::= 'check' '(' Expression ')' Block
+12. Output ::= 'shout' '(' Expression ')'
+13. ReturnStatement ::= 'return' Expression
+14. FunctionCallStatement ::= 'call' FunctionCall
+15. Expression ::= RelationalExpression  
+    | ListExpression
+16. RelationalExpression ::= ArithmeticExpression RelationalExpression'
+17. RelationalExpression' ::= ComparisonOperator ArithmeticExpression  
+    | ε
+18. ComparisonOperator ::= 'less_than'  
+    | 'greater_than'  
+    | 'less_equal'  
+    | 'greater_equal'  
+    | 'equal_to'  
+    | 'not_equal_to'
+19. ArithmeticExpression ::= Term ArithmeticExpression'
+20. ArithmeticExpression' ::= AddOp Term ArithmeticExpression'  
+    | ε
+21. AddOp ::= 'add'  
+    | 'subtract'
+22. Term ::= Factor Term'
+23. Term' ::= MulOp Factor Term'  
+    | ε
+24. MulOp ::= 'multiply' | 'divide'
+25. Factor ::= 'subtract' Factor  
+    | Primary
+26. Primary ::= '(' Expression ')'  
+    | Literal  
+    | Identifier  
+    | FunctionCall
+27. FunctionCall ::= Identifier '(' ArgumentList ')'
+28. ArgumentList ::= ε  
+    | Expression  
+    | Expression ',' ArgumentList
+29. Literal ::= IntegerLiteral  
+    | FloatLiteral  
+    | StringLiteral
+30. ListExpression ::= IntegerList  
+    | FloatList  
+    | StringList
+31. IntegerList ::= '[' IntegerListElements ']'
+32. IntegerListElements ::= IntegerLiteral IntegerListElements'  
+    | ε
+33. IntegerListElements' ::= ',' IntegerLiteral IntegerListElements'  
+    | ε
+34. FloatList ::= '[' FloatListElements ']'
+35. FloatListElements ::= FloatLiteral FloatListElements'  
+    | ε
+36. FloatListElements' ::= ',' FloatLiteral FloatListElements'  
+    | ε
+37. StringList ::= '[' StringListElements ']'
+38. StringListElements ::= StringLiteral StringListElements'  
+    | ε
+39. StringListElements' ::= ',' StringLiteral StringListElements'  
+    | ε
+
+### Non-Terminals and Terminals
+
+#### Non-Terminals
+
+- **Program**
+- **StatementList**
+- **Statement**
+- **VarDeclaration**
+- **Assignment**
+- **FunctionDef**
+- **IfStatement**
+- **ElseClause**
+- **Loop**
+- **Output**
+- **ReturnStatement**
+- **FunctionCallStatement**
+- **Expression**
+- **RelationalExpression**
+- **RelationalExpression'**
+- **ArithmeticExpression**
+- **ArithmeticExpression'**
+- **Term**
+- **Term'**
+- **Factor**
+- **Primary**
+- **FunctionCall**
+- **ArgumentList**
+- **ParameterList**
+- **Block**
+- **Literal**
+- **ListExpression**
+- **IntegerList**
+- **FloatList**
+- **StringList**
+- **IntegerListElements**
+- **IntegerListElements'**
+- **FloatListElements**
+- **FloatListElements'**
+- **StringListElements**
+- **StringListElements'**
+
+#### Terminals
+
+- **Keywords**: `'make'`, `'assign'`, `'def'`, `'if'`, `'else'`, `'check'`, `'shout'`, `'return'`, `'call'`
+- **Arithmetic Operators**: `'add'`, `'subtract'`, `'multiply'`, `'divide'`
+- **Comparison Operators**: `'less_than'`, `'greater_than'`, `'less_equal'`, `'greater_equal'`, `'equal_to'`, `'not_equal_to'`
+- **Delimiters**: `'('`, `')'`, `'{'`, `'}'`, `'['`, `']'`, `','`, `';'`
+- **Identifier**
+- **IntegerLiteral**
+- **FloatLiteral**
+- **StringLiteral**
