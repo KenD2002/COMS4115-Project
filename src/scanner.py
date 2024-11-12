@@ -16,11 +16,10 @@ class Scanner:
             "make", 
             "check", 
             "shout", 
-            "def", 
             "if", 
             "else", 
             "return",
-            "function",
+            "def",
             "call"
         }
         operators = {
@@ -152,6 +151,9 @@ class Scanner:
                 elif self.current_char == '.':
                     # If a number has more than one decimal point
                     print(f"Lexical error: Invalid float format with multiple decimal points at position {i}.")
+                    return
+                elif self.current_char.isalpha():  # Error: numbers followed by letters
+                    print(f"Lexical error: Invalid token starting with a number at position {start}.")
                     return
                 else:
                     # Read complete
