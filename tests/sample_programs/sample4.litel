@@ -1,7 +1,10 @@
 make x assign 10;
-shout "Hello World;
 
-if (x less_than 20) 
+def haha(x, y)
 {
-    shout "x is less than 20";
+    x assign x add 1;
+    y assign y add x;
+    return y;
 }
+
+make n assign call haha(x, 5) add 10;

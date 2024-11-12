@@ -1,12 +1,15 @@
-sample1.litel:
+lexer.sh sample output:
 
+sample1.litel:
 <KEYWORD, make>
 <IDENTIFIER, x>
 <OPERATOR, =>
 <INTLITERAL, 10>
 <SEMICOLON, ;>
 <KEYWORD, shout>
+<LPAR, (>
 <STRINGLITERAL, "Hello World">
+<RPAR, )>
 <SEMICOLON, ;>
 <KEYWORD, if>
 <LPAR, (>
@@ -16,39 +19,47 @@ sample1.litel:
 <RPAR, )>
 <LBRACE, {>
 <KEYWORD, shout>
+<LPAR, (>
 <STRINGLITERAL, "x is less than 20">
+<RPAR, )>
 <SEMICOLON, ;>
 <RBRACE, }>
 
 
 sample2.litel:
-
 <KEYWORD, make>
 <IDENTIFIER, x>
 <OPERATOR, =>
-<INTLITERAL, 5>
+<FLOATLITERAL, 5.00>
 <SEMICOLON, ;>
 <KEYWORD, make>
 <IDENTIFIER, y>
 <OPERATOR, =>
-<INTLITERAL, 10>
+<FLOATLITERAL, 10.00>
 <SEMICOLON, ;>
 <KEYWORD, shout>
+<LPAR, (>
 <STRINGLITERAL, "The value of x is: ">
+<RPAR, )>
 <SEMICOLON, ;>
 <KEYWORD, shout>
+<LPAR, (>
 <IDENTIFIER, x>
+<RPAR, )>
 <SEMICOLON, ;>
 <KEYWORD, shout>
+<LPAR, (>
 <STRINGLITERAL, "The value of y is: ">
+<RPAR, )>
 <SEMICOLON, ;>
 <KEYWORD, shout>
+<LPAR, (>
 <IDENTIFIER, y>
+<RPAR, )>
 <SEMICOLON, ;>
 
 
 sample3.litel:
-
 <KEYWORD, make>
 <IDENTIFIER, count>
 <OPERATOR, =>
@@ -62,10 +73,14 @@ sample3.litel:
 <RPAR, )>
 <LBRACE, {>
 <KEYWORD, shout>
+<LPAR, (>
 <STRINGLITERAL, "Count is: ">
+<RPAR, )>
 <SEMICOLON, ;>
 <KEYWORD, shout>
+<LPAR, (>
 <IDENTIFIER, count>
+<RPAR, )>
 <SEMICOLON, ;>
 <IDENTIFIER, count>
 <OPERATOR, =>
@@ -77,11 +92,451 @@ sample3.litel:
 
 
 sample4.litel:
-
-Lexical error: Unterminated string literal at position 90.
+<KEYWORD, make>
+<IDENTIFIER, x>
+<OPERATOR, =>
+<INTLITERAL, 10>
+<SEMICOLON, ;>
+<KEYWORD, def>
+<IDENTIFIER, haha>
+<LPAR, (>
+<IDENTIFIER, x>
+<COMMA, ,>
+<IDENTIFIER, y>
+<RPAR, )>
+<LBRACE, {>
+<IDENTIFIER, x>
+<OPERATOR, =>
+<IDENTIFIER, x>
+<OPERATOR, +>
+<INTLITERAL, 1>
+<SEMICOLON, ;>
+<IDENTIFIER, y>
+<OPERATOR, =>
+<IDENTIFIER, y>
+<OPERATOR, +>
+<IDENTIFIER, x>
+<SEMICOLON, ;>
+<KEYWORD, return>
+<IDENTIFIER, y>
+<SEMICOLON, ;>
+<RBRACE, }>
+<KEYWORD, make>
+<IDENTIFIER, n>
+<OPERATOR, =>
+<KEYWORD, call>
+<IDENTIFIER, haha>
+<LPAR, (>
+<IDENTIFIER, x>
+<COMMA, ,>
+<INTLITERAL, 5>
+<RPAR, )>
+<OPERATOR, +>
+<INTLITERAL, 10>
+<SEMICOLON, ;>
 
 
 sample5.litel:
+<KEYWORD, make>
+<IDENTIFIER, x>
+<OPERATOR, =>
+<INTLITERAL, 0>
+<OPERATOR, +>
+<LPAR, (>
+<INTLITERAL, 1>
+<OPERATOR, +>
+<LPAR, (>
+<INTLITERAL, 2>
+<OPERATOR, ->
+<INTLITERAL, 3>
+<RPAR, )>
+<RPAR, )>
+<OPERATOR, *>
+<INTLITERAL, 4>
+<SEMICOLON, ;>
 
+
+sample6.litel:
+<KEYWORD, make>
+<IDENTIFIER, integers>
+<OPERATOR, =>
+<LBRACKET, [>
+<INTLITERAL, 1>
+<COMMA, ,>
+<INTLITERAL, 2>
+<COMMA, ,>
+<INTLITERAL, 3>
+<RBRACKET, ]>
+<SEMICOLON, ;>
+<KEYWORD, make>
+<IDENTIFIER, strings>
+<OPERATOR, =>
+<LBRACKET, [>
+<STRINGLITERAL, "haha">
+<COMMA, ,>
+<STRINGLITERAL, "hehe">
+<COMMA, ,>
+<STRINGLITERAL, "hoho">
+<RBRACKET, ]>
+<SEMICOLON, ;>
+<KEYWORD, make>
+<IDENTIFIER, x>
+<OPERATOR, =>
+<IDENTIFIER, integers>
+<LBRACKET, [>
+<INTLITERAL, 0>
+<RBRACKET, ]>
+<SEMICOLON, ;>
+<IDENTIFIER, integers>
+<LBRACKET, [>
+<INTLITERAL, 0>
+<RBRACKET, ]>
+<OPERATOR, =>
+<INTLITERAL, 4>
+<SEMICOLON, ;>
+
+
+sample7.litel:
 Lexical error: Invalid token starting with a number at position 14.
-Lexical error: Unterminated string literal at position 90.
+
+
+sample8.litel:
+Lexical error: Unterminated string literal at position 91.
+
+
+
+parser.sh sample output:
+
+sample1.litel:
+Formatted AST:
+Program
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── x
+│       └── Expression
+│           └── IntegerLiteral
+│               └── 10
+├── List Item
+│   └── Output
+│       └── StringLiteral
+│           └── "Hello World"
+└── List Item
+    └── IfStatement
+        ├── Condition
+        │   └── RelationalExpression
+        │       ├── Left
+        │       │   └── Identifier
+        │       │       └── x
+        │       ├── Operator
+        │       │   └── <
+        │       └── Right
+        │           └── IntegerLiteral
+        │               └── 20
+        ├── Then
+        │   └── Block
+        │       └── List Item
+        │           └── Output
+        │               └── StringLiteral
+        │                   └── "x is less than 20"
+        └── Else
+            └── None
+
+
+AST:
+{'Program': [{'VarDeclaration': {'Identifier': 'x', 'Expression': {'IntegerLiteral': 10}}}, {'Output': {'StringLiteral': '"Hello World"'}}, {'IfStatement': {'Condition': {'RelationalExpression': {'Left': {'Identifier': 'x'}, 'Operator': '<', 'Right': {'IntegerLiteral': 20}}}, 'Then': {'Block': [{'Output': {'StringLiteral': '"x is less than 20"'}}]}, 'Else': None}}]}
+
+
+sample2.litel:
+Formatted AST:
+Program
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── x
+│       └── Expression
+│           └── FloatLiteral
+│               └── 5.0
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── y
+│       └── Expression
+│           └── FloatLiteral
+│               └── 10.0
+├── List Item
+│   └── Output
+│       └── StringLiteral
+│           └── "The value of x is: "
+├── List Item
+│   └── Output
+│       └── Identifier
+│           └── x
+├── List Item
+│   └── Output
+│       └── StringLiteral
+│           └── "The value of y is: "
+└── List Item
+    └── Output
+        └── Identifier
+            └── y
+
+
+AST:
+{'Program': [{'VarDeclaration': {'Identifier': 'x', 'Expression': {'FloatLiteral': 5.0}}}, {'VarDeclaration': {'Identifier': 'y', 'Expression': {'FloatLiteral': 10.0}}}, {'Output': {'StringLiteral': '"The value of x is: "'}}, {'Output': {'Identifier': 'x'}}, {'Output': {'StringLiteral': '"The value of y is: "'}}, {'Output': {'Identifier': 'y'}}]}
+
+
+sample3.litel:
+Formatted AST:
+Program
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── count
+│       └── Expression
+│           └── IntegerLiteral
+│               └── 0
+└── List Item
+    └── Loop
+        ├── Condition
+        │   └── RelationalExpression
+        │       ├── Left
+        │       │   └── Identifier
+        │       │       └── count
+        │       ├── Operator
+        │       │   └── <
+        │       └── Right
+        │           └── IntegerLiteral
+        │               └── 5
+        └── Block
+            └── Block
+                ├── List Item
+                │   └── Output
+                │       └── StringLiteral
+                │           └── "Count is: "
+                ├── List Item
+                │   └── Output
+                │       └── Identifier
+                │           └── count
+                └── List Item
+                    └── Assignment
+                        ├── Assignable
+                        │   └── Identifier
+                        │       └── count
+                        └── Expression
+                            └── ArithmeticExpression
+                                ├── Left
+                                │   └── Identifier
+                                │       └── count
+                                ├── Operator
+                                │   └── +
+                                └── Right
+                                    └── IntegerLiteral
+                                        └── 1
+
+
+AST:
+{'Program': [{'VarDeclaration': {'Identifier': 'count', 'Expression': {'IntegerLiteral': 0}}}, {'Loop': {'Condition': {'RelationalExpression': {'Left': {'Identifier': 'count'}, 'Operator': '<', 'Right': {'IntegerLiteral': 5}}}, 'Block': {'Block': [{'Output': {'StringLiteral': '"Count is: "'}}, {'Output': {'Identifier': 'count'}}, {'Assignment': {'Assignable': {'Identifier': 'count'}, 'Expression': {'ArithmeticExpression': {'Left': {'Identifier': 'count'}, 'Operator': '+', 'Right': {'IntegerLiteral': 1}}}}}]}}}]}
+
+
+sample4.litel:
+Formatted AST:
+Program
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── x
+│       └── Expression
+│           └── IntegerLiteral
+│               └── 10
+├── List Item
+│   └── FunctionDef
+│       ├── Name
+│       │   └── haha
+│       ├── Parameters
+│       │   ├── List Item
+│       │   │   └── x
+│       │   └── List Item
+│       │       └── y
+│       └── Body
+│           └── Block
+│               ├── List Item
+│               │   └── Assignment
+│               │       ├── Assignable
+│               │       │   └── Identifier
+│               │       │       └── x
+│               │       └── Expression
+│               │           └── ArithmeticExpression
+│               │               ├── Left
+│               │               │   └── Identifier
+│               │               │       └── x
+│               │               ├── Operator
+│               │               │   └── +
+│               │               └── Right
+│               │                   └── IntegerLiteral
+│               │                       └── 1
+│               ├── List Item
+│               │   └── Assignment
+│               │       ├── Assignable
+│               │       │   └── Identifier
+│               │       │       └── y
+│               │       └── Expression
+│               │           └── ArithmeticExpression
+│               │               ├── Left
+│               │               │   └── Identifier
+│               │               │       └── y
+│               │               ├── Operator
+│               │               │   └── +
+│               │               └── Right
+│               │                   └── Identifier
+│               │                       └── x
+│               └── List Item
+│                   └── Return
+│                       └── Identifier
+│                           └── y
+└── List Item
+    └── VarDeclaration
+        ├── Identifier
+        │   └── n
+        └── Expression
+            └── ArithmeticExpression
+                ├── Left
+                │   └── FunctionCall
+                │       ├── Name
+                │       │   └── haha
+                │       └── Arguments
+                │           ├── List Item
+                │           │   └── Identifier
+                │           │       └── x
+                │           └── List Item
+                │               └── IntegerLiteral
+                │                   └── 5
+                ├── Operator
+                │   └── +
+                └── Right
+                    └── IntegerLiteral
+                        └── 10
+
+
+AST:
+{'Program': [{'VarDeclaration': {'Identifier': 'x', 'Expression': {'IntegerLiteral': 10}}}, {'FunctionDef': {'Name': 'haha', 'Parameters': ['x', 'y'], 'Body': {'Block': [{'Assignment': {'Assignable': {'Identifier': 'x'}, 'Expression': {'ArithmeticExpression': {'Left': {'Identifier': 'x'}, 'Operator': '+', 'Right': {'IntegerLiteral': 1}}}}}, {'Assignment': {'Assignable': {'Identifier': 'y'}, 'Expression': {'ArithmeticExpression': {'Left': {'Identifier': 'y'}, 'Operator': '+', 'Right': {'Identifier': 'x'}}}}}, {'Return': {'Identifier': 'y'}}]}}}, {'VarDeclaration': {'Identifier': 'n', 'Expression': {'ArithmeticExpression': {'Left': {'FunctionCall': {'Name': 'haha', 'Arguments': [{'Identifier': 'x'}, {'IntegerLiteral': 5}]}}, 'Operator': '+', 'Right': {'IntegerLiteral': 10}}}}}]}
+
+
+sample5.litel:
+Formatted AST:
+Program
+└── List Item
+    └── VarDeclaration
+        ├── Identifier
+        │   └── x
+        └── Expression
+            └── ArithmeticExpression
+                ├── Left
+                │   └── IntegerLiteral
+                │       └── 0
+                ├── Operator
+                │   └── +
+                └── Right
+                    └── Term
+                        ├── Left
+                        │   └── ArithmeticExpression
+                        │       ├── Left
+                        │       │   └── IntegerLiteral
+                        │       │       └── 1
+                        │       ├── Operator
+                        │       │   └── +
+                        │       └── Right
+                        │           └── ArithmeticExpression
+                        │               ├── Left
+                        │               │   └── IntegerLiteral
+                        │               │       └── 2
+                        │               ├── Operator
+                        │               │   └── -
+                        │               └── Right
+                        │                   └── IntegerLiteral
+                        │                       └── 3
+                        ├── Operator
+                        │   └── *
+                        └── Right
+                            └── IntegerLiteral
+                                └── 4
+
+
+AST:
+{'Program': [{'VarDeclaration': {'Identifier': 'x', 'Expression': {'ArithmeticExpression': {'Left': {'IntegerLiteral': 0}, 'Operator': '+', 'Right': {'Term': {'Left': {'ArithmeticExpression': {'Left': {'IntegerLiteral': 1}, 'Operator': '+', 'Right': {'ArithmeticExpression': {'Left': {'IntegerLiteral': 2}, 'Operator': '-', 'Right': {'IntegerLiteral': 3}}}}}, 'Operator': '*', 'Right': {'IntegerLiteral': 4}}}}}}}]}
+
+
+sample6.litel:
+Formatted AST:
+Program
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── integers
+│       └── Expression
+│           └── ListExpression
+│               ├── Type
+│               │   └── int
+│               └── Elements
+│                   ├── List Item
+│                   │   └── IntegerLiteral
+│                   │       └── 1
+│                   ├── List Item
+│                   │   └── IntegerLiteral
+│                   │       └── 2
+│                   └── List Item
+│                       └── IntegerLiteral
+│                           └── 3
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── strings
+│       └── Expression
+│           └── ListExpression
+│               ├── Type
+│               │   └── string
+│               └── Elements
+│                   ├── List Item
+│                   │   └── StringLiteral
+│                   │       └── "haha"
+│                   ├── List Item
+│                   │   └── StringLiteral
+│                   │       └── "hehe"
+│                   └── List Item
+│                       └── StringLiteral
+│                           └── "hoho"
+├── List Item
+│   └── VarDeclaration
+│       ├── Identifier
+│       │   └── x
+│       └── Expression
+│           └── IndexedIdentifier
+│               ├── Identifier
+│               │   └── integers
+│               └── Index
+│                   └── IntegerLiteral
+│                       └── 0
+└── List Item
+    └── Assignment
+        ├── Assignable
+        │   └── IndexedIdentifier
+        │       ├── Identifier
+        │       │   └── integers
+        │       └── Index
+        │           └── IntegerLiteral
+        │               └── 0
+        └── Expression
+            └── IntegerLiteral
+                └── 4
+
+
+AST:
+{'Program': [{'VarDeclaration': {'Identifier': 'integers', 'Expression': {'ListExpression': {'Type': 'int', 'Elements': [{'IntegerLiteral': 1}, {'IntegerLiteral': 2}, {'IntegerLiteral': 3}]}}}}, {'VarDeclaration': {'Identifier': 'strings', 'Expression': {'ListExpression': {'Type': 'string', 'Elements': [{'StringLiteral': '"haha"'}, {'StringLiteral': '"hehe"'}, {'StringLiteral': '"hoho"'}]}}}}, {'VarDeclaration': {'Identifier': 'x', 'Expression': {'IndexedIdentifier': {'Identifier': 'integers', 'Index': {'IntegerLiteral': 0}}}}}, {'Assignment': {'Assignable': {'IndexedIdentifier': {'Identifier': 'integers', 'Index': {'IntegerLiteral': 0}}}, 'Expression': {'IntegerLiteral': 4}}}]}
+
+
+sample7.litel:
+Error: Incorrect token format in tokens input.
+
+
+sample8.litel:
+Error: Incorrect token format in tokens input.

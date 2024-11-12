@@ -1,7 +1,1 @@
-make x assign 123abcd;
-shout "Hello World;
-
-if (x less_than 20) 
-{
-    shout "x is less than 20";
-}
+make x assign 0 add (1 add (2 subtract 3)) multiply 4;

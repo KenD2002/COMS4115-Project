@@ -176,6 +176,9 @@ class Scanner:
                 else:
                     i += 1  # Continue reading string literal
 
+            else:
+                print(f"Lexical error: Unexpected character '{self.current_char}' at position {self.position}.")
+
         return self.tokens
     
 

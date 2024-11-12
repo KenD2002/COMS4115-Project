@@ -1,11 +1,11 @@
 // some comments
 
 make x assign 10;
-shout "Hello World";
+shout("Hello World");
 
 // some comments
 
 if (x less_than 20) 
 { // some comments
-    shout "x is less than 20"; // some comments
+    shout ("x is less than 20"); // some comments
 }
