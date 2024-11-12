@@ -239,20 +239,19 @@ To run the lexer or parser, change the current working directory to the root dir
 Then, make sure to make `lexer.sh` and `parser.sh` script file executable by
 
 `chmod +x ./shell/lexer.sh`
+
 `chmod +x ./shell/parser.sh`
 
 
 Then you can execute the lexer on files with `.litel` extension, and the result shall be output to your terminal. You can execute it by
 
 `./shell/lexer.sh <source_file.litel>` or
-
 `./shell/parser.sh <source_file.litel>`
 
 
 To output the result into a file, you can use `>` or  `>>` to redirect stdout by
 
 `./shell/lexer.sh <source_file.litel> > <destination_file>` or
-
 `./shell/parser.sh <source_file.litel> > <destination_file>`
 
 Example `.litel` files and their expected outputs are located in the `./tests/sample_programs` directory.
