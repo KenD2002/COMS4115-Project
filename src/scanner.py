@@ -19,7 +19,9 @@ class Scanner:
             "def", 
             "if", 
             "else", 
-            "return"
+            "return",
+            "function",
+            "call"
         }
         operators = {
             "add": "+",
@@ -75,6 +77,14 @@ class Scanner:
                 elif self.current_char == ')':
                     self.tokens.append(('RPAR', ')'))
                     i += 1
+                # Add LBRACKET to token list
+                elif self.current_char == '[': 
+                    self.tokens.append(('LBRACKET', '['))
+                    i += 1
+                # Add RBRACKET to token list
+                elif self.current_char == ']': 
+                    self.tokens.append(('RBRACKET', ']'))
+                    i += 1
                 # Add COMMA to tokens list
                 elif self.current_char == ',':
                     self.tokens.append(('COMMA', ','))
@@ -121,14 +131,34 @@ class Scanner:
             elif self.state == 'NUMBER':
                 if self.current_char.isdigit():
                     i += 1  # Continue reading number
+                elif self.current_char == '.' and (i + 1) < len(code) and code[i + 1].isdigit():
+                    # Check if it's a float by seeing if a digit follows the decimal point
+                    self.state = 'FLOAT'
+                    i += 1
                 elif self.current_char.isalpha():  # Error: numbers followed by letters
                     print(f"Lexical error: Invalid token starting with a number at position {start}.")
                     return
                 else:
+                    # If we don't encounter a '.', this is an integer
                     number = code[start:i]
                     self.tokens.append(('INTLITERAL', number))
-                    self.state = 'START'  # Reinitialize state
-                    start = i  # Reset start for the next token
+                    self.state = 'START'
+                    start = i
+
+            # State for handling floats
+            elif self.state == 'FLOAT':
+                if self.current_char.isdigit():
+                    i += 1
+                elif self.current_char == '.':
+                    # If a number has more than one decimal point
+                    print(f"Lexical error: Invalid float format with multiple decimal points at position {i}.")
+                    return
+                else:
+                    # Read complete
+                    float_number = code[start:i]
+                    self.tokens.append(('FLOATLITERAL', float_number))
+                    self.state = 'START'
+                    start = i
 
             # State for handling string literals
             elif self.state == 'STRING':
