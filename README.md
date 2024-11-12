@@ -115,49 +115,6 @@ The language uses word-based operators in the source code, which are internally 
 
 ---
 
-## File Extension
-LiteLang source files will use the `.litel` file extension to
-differentiate the LiteLang code from other programming languages. 
-
----
-
-## Installation and Execution
-
-Before you can run LiteLang, make sure you have the following installed on your system:
-
-1. **Python 3.x** (for running the LiteLang interpreter)
-
-2. **GCC or Clang** (for compiling the generated C code)
-
-
-To run the lexer or parser, change the current working directory to the root directory of the project.
-
-
-Then, make sure to make `lexer.sh` and `parser.sh` script file executable by
-
-`chmod +x ./shell/lexer.sh`
-`chmod +x ./shell/parser.sh`
-
-
-Then you can execute the lexer on files with `.litel` extension, and the result shall be output to your terminal. You can execute it by
-
-`./shell/lexer.sh <source_file.litel>` or
-
-`./shell/parser.sh <source_file.litel>`
-
-
-To output the result into a file, you can use `>` or  `>>` to redirect stdout by
-
-`./shell/lexer.sh <source_file.litel> > <destination_file>` or
-
-`./shell/parser.sh <source_file.litel> > <destination_file>`
-
-
-
-
-Example `.litel` files and their expected outputs are located in the `./tests/sample_programs` directory.
-
-
 ## Parser
 
 This project uses Recursive Descent Parser.
@@ -165,87 +122,46 @@ This project uses Recursive Descent Parser.
 ### Context-Free Grammar (CFG)
 
 1. Program ::= StatementList
-2. StatementList ::= Statement  
-   | Statement StatementList
-3. Statement ::= VarDeclaration ';'
-   | Assignment ';'
-   | Output ';'
-   | ReturnStatement ';'
-   | FunctionCallStatement ';'
-   | IfStatement
-   | Loop
-   | FunctionDef
-   | ';'
+2. StatementList ::= Statement | Statement StatementList
+3. Statement ::= VarDeclaration ';' | Assignment ';' | Output ';' | ReturnStatement ';'
+   | FunctionCallStatement ';' | IfStatement | Loop | FunctionDef | ';'
 4. VarDeclaration ::= 'make' Identifier 'assign' Expression
-5. Assignable ::= Identifier
-   | Identifier '[' Expression ']'
+5. Assignable ::= Identifier | Identifier '[' Expression ']'
 6. Assignment ::= Identifier 'assign' Expression
 7. FunctionDef ::= 'def' Identifier '(' ParameterList ')' Block
-8. ParameterList ::= ε  
-   | Identifier  
-   | Identifier ',' ParameterList
+8. ParameterList ::= ε | Identifier | Identifier ',' ParameterList
 9. Block ::= '{' StatementList '}'
 10. IfStatement ::= 'if' '(' Expression ')' Block ElseClause
-11. ElseClause ::= ε  
-    | 'else' Block
+11. ElseClause ::= ε | 'else' Block
 12. Loop ::= 'check' '(' Expression ')' Block
 13. Output ::= 'shout' '(' Expression ')'
 14. ReturnStatement ::= 'return' Expression
 15. FunctionCallStatement ::= 'call' FunctionCall
-16. Expression ::= RelationalExpression  
-    | ListExpression
+16. Expression ::= RelationalExpression | ListExpression
 17. RelationalExpression ::= ArithmeticExpression RelationalExpression'
-18. RelationalExpression' ::= ComparisonOperator ArithmeticExpression RelationalExpression'  
-    | ε
-19. ComparisonOperator ::= 'less_than'  
-    | 'greater_than'  
-    | 'less_equal'  
-    | 'greater_equal'  
-    | 'equal_to'  
-    | 'not_equal_to'
+18. RelationalExpression' ::= ComparisonOperator ArithmeticExpression RelationalExpression' | ε
+19. ComparisonOperator ::= 'less_than' | 'greater_than' | 'less_equal' | 'greater_equal' | 'equal_to' | 'not_equal_to'
 20. ArithmeticExpression ::= Term ArithmeticExpression'
-21. ArithmeticExpression' ::= AddOp Term ArithmeticExpression'  
-    | ε
-22. AddOp ::= 'add'  
-    | 'subtract'
+21. ArithmeticExpression' ::= AddOp Term ArithmeticExpression' | ε
+22. AddOp ::= 'add' | 'subtract'
 23. Term ::= Factor Term'
-24. Term' ::= MulOp Factor Term'  
-    | ε
-25. MulOp ::= 'multiply' 
-    | 'divide'
-26. Factor ::= 'call' FunctionCall
-    | '-' Factor
-    | Primary
-27. Primary ::= '(' Expression ')'
-    | Literal
-    | Identifier
-    | Identifier '[' Expression ']'
-    | FunctionCall
+24. Term' ::= MulOp Factor Term' | ε
+25. MulOp ::= 'multiply' | 'divide'
+26. Factor ::= 'call' FunctionCall | '-' Factor | Primary
+27. Primary ::= '(' Expression ')' | Literal | Identifier | Identifier '[' Expression ']' | FunctionCall
 28. FunctionCall ::= Identifier '(' ArgumentList ')'
-29. ArgumentList ::= ε  
-    | Expression  
-    | Expression ',' ArgumentList
-30. Literal ::= IntegerLiteral  
-    | FloatLiteral  
-    | StringLiteral
-31. ListExpression ::= IntegerList  
-    | FloatList  
-    | StringList
+29. ArgumentList ::= ε | Expression | Expression ',' ArgumentList
+30. Literal ::= IntegerLiteral | FloatLiteral | StringLiteral
+31. ListExpression ::= IntegerList | FloatList | StringList
 32. IntegerList ::= '[' IntegerListElements ']'
-33. IntegerListElements ::= IntegerLiteral IntegerListElements'  
-    | ε
-34. IntegerListElements' ::= ',' IntegerLiteral IntegerListElements'  
-    | ε
+33. IntegerListElements ::= IntegerLiteral IntegerListElements' | ε
+34. IntegerListElements' ::= ',' IntegerLiteral IntegerListElements' | ε
 35. FloatList ::= '[' FloatListElements ']'
-36. FloatListElements ::= FloatLiteral FloatListElements'  
-    | ε
-37. FloatListElements' ::= ',' FloatLiteral FloatListElements'  
-    | ε
+36. FloatListElements ::= FloatLiteral FloatListElements' | ε
+37. FloatListElements' ::= ',' FloatLiteral FloatListElements' | ε
 38. StringList ::= '[' StringListElements ']'
-39. StringListElements ::= StringLiteral StringListElements'  
-    | ε
-40. StringListElements' ::= ',' StringLiteral StringListElements'  
-    | ε
+39. StringListElements ::= StringLiteral StringListElements' | ε
+40. StringListElements' ::= ',' StringLiteral StringListElements' | ε
 
 ### Non-Terminals and Terminals
 
@@ -298,3 +214,45 @@ This project uses Recursive Descent Parser.
 - **IntegerLiteral**
 - **FloatLiteral**
 - **StringLiteral**
+
+
+---
+
+## File Extension
+LiteLang source files will use the `.litel` file extension to
+differentiate the LiteLang code from other programming languages. 
+
+---
+
+## Installation and Execution
+
+Before you can run LiteLang, make sure you have the following installed on your system:
+
+1. **Python 3.x** (for running the LiteLang interpreter)
+
+2. **GCC or Clang** (for compiling the generated C code)
+
+
+To run the lexer or parser, change the current working directory to the root directory of the project.
+
+
+Then, make sure to make `lexer.sh` and `parser.sh` script file executable by
+
+`chmod +x ./shell/lexer.sh`
+`chmod +x ./shell/parser.sh`
+
+
+Then you can execute the lexer on files with `.litel` extension, and the result shall be output to your terminal. You can execute it by
+
+`./shell/lexer.sh <source_file.litel>` or
+
+`./shell/parser.sh <source_file.litel>`
+
+
+To output the result into a file, you can use `>` or  `>>` to redirect stdout by
+
+`./shell/lexer.sh <source_file.litel> > <destination_file>` or
+
+`./shell/parser.sh <source_file.litel> > <destination_file>`
+
+Example `.litel` files and their expected outputs are located in the `./tests/sample_programs` directory.
