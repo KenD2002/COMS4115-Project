@@ -43,7 +43,7 @@ class CodeGenerator:
         return visitor(node_value, in_main)
 
     def generic_visit(self, node_value, in_main):
-        raise Exception(f"No visitor method defined for this node type or unexpected node: {node_value}")
+        raise Exception(f"No visitor method defined for {node_value}")
 
     def visit_VarDeclaration(self, node, in_main):
         identifier = node["Identifier"]
@@ -51,7 +51,6 @@ class CodeGenerator:
         expr_code, expr_type = self.generate_expression(expr)
 
         if isinstance(expr_code, list):
-            # Arrays
             base_type = expr_type.replace("[]", "")
             line = f"{base_type} {identifier}[] = {{{', '.join(expr_code)}}};\n"
             self.variables[identifier] = base_type
@@ -124,22 +123,15 @@ class CodeGenerator:
         then_block = node["Then"]
         else_block = node["Else"]
 
-        # Attempt to evaluate condition at compile time if possible
-        cond_decision = self.evaluate_condition_if_purely_numeric(condition)
-        # cond_decision can be True, False, or None (if uncertain)
-
-        if cond_decision is True:
-            # Condition always true -> generate only then_block
+        dce_result = self.evaluate_if_condition(condition)
+        if dce_result is True:
             for stmt in then_block["Block"]:
                 self.visit(stmt, in_main)
-        elif cond_decision is False:
-            # Condition always false -> generate else_block if exists
+        elif dce_result is False:
             if else_block is not None:
                 for stmt in else_block["Block"]:
                     self.visit(stmt, in_main)
-            # else no code generated
         else:
-            # Unknown condition, generate normal if-else
             cond_code, _ = self.generate_expression(condition)
             line = f"if ({cond_code}) {{\n"
             self.append_code(line, in_main)
@@ -160,14 +152,28 @@ class CodeGenerator:
     def visit_Loop(self, node, in_main):
         condition = node["Condition"]
         block = node["Block"]
-        cond_code, _ = self.generate_expression(condition)
-        line = f"while ({cond_code}) {{\n"
-        self.append_code(line, in_main)
-        self.indent_level += 1
-        for stmt in block["Block"]:
-            self.visit(stmt, in_main)
-        self.indent_level -= 1
-        self.append_code("}\n", in_main)
+
+        loop_result = self.evaluate_if_condition(condition)
+
+        if loop_result is True:
+            line = "while (1) {\n"
+            self.append_code(line, in_main)
+            self.indent_level += 1
+            for stmt in block["Block"]:
+                self.visit(stmt, in_main)
+            self.indent_level -= 1
+            self.append_code("}\n", in_main)
+        elif loop_result is False:
+            pass
+        else:
+            cond_code, _ = self.generate_expression(condition)
+            line = f"while ({cond_code}) {{\n"
+            self.append_code(line, in_main)
+            self.indent_level += 1
+            for stmt in block["Block"]:
+                self.visit(stmt, in_main)
+            self.indent_level -= 1
+            self.append_code("}\n", in_main)
 
     def visit_FunctionDef(self, node, in_main):
         func_name = node["Name"]
@@ -234,18 +240,15 @@ class CodeGenerator:
                 string_val = string_val[1:-1]
             return (f"\"{string_val}\"", "string")
         elif node_type == "Identifier":
-            # Variable -> can't be determined at compile time for sure
             var_name = node_value
             var_type = self.variables.get(var_name, "int")
             return (var_name, self.reverse_map_type(var_type))
         elif node_type == "IndexedIdentifier":
-            # Indexed access -> can't be determined at compile time for sure
             ident = node_value["Identifier"]
             index_expr = node_value["Index"]
             index_code, _ = self.generate_expression(index_expr)
             return (f"{ident}[{index_code}]", "int")
         elif node_type == "FunctionCall":
-            # Function calls -> cannot determine at compile time
             func_name = node_value["Name"]
             args = node_value["Arguments"]
             args_code = []
@@ -274,9 +277,8 @@ class CodeGenerator:
             left_node = node_value["Left"]
             op = node_value["Operator"]
             right_node = node_value["Right"]
-            left_code, left_type = self.generate_expression(left_node)
-            right_code, right_type = self.generate_expression(right_node)
-            # Just return code, can't fold relational here easily
+            left_code, _ = self.generate_expression(left_node)
+            right_code, _ = self.generate_expression(right_node)
             return (f"({left_code} {op} {right_code})", "int")
         elif node_type == "UnaryExpression":
             op = node_value["Operator"]
@@ -302,46 +304,40 @@ class CodeGenerator:
         else:
             raise Exception(f"Unknown expression node type: {node_type}")
 
-    def evaluate_condition_if_purely_numeric(self, condition_expr):
-        """
-        Attempt to evaluate the if condition at compile time if it's purely numeric.
-        If we can determine it's always True or always False, return True or False.
-        If we cannot determine, return None.
-        """
-        # We can try a simplified approach:
-        # - If the condition is a relational expression of only numeric literals,
-        #   we evaluate it now.
-        # Otherwise, return None.
+    def evaluate_if_condition(self, condition):
+        node_type = list(condition.keys())[0]
+        if node_type != "RelationalExpression":
+            return None
 
-        # Extract expression
-        node_type = list(condition_expr.keys())[0]
-        if node_type == "RelationalExpression":
-            node_value = condition_expr[node_type]
-            left = node_value["Left"]
-            op = node_value["Operator"]
-            right = node_value["Right"]
+        node_value = condition[node_type]
+        op = node_value["Operator"]
+        left_expr = node_value["Left"]
+        right_expr = node_value["Right"]
 
-            left_code, left_type = self.generate_expression(left)
-            right_code, right_type = self.generate_expression(right)
+        left_code, left_type = self.generate_expression(left_expr)
+        right_code, right_type = self.generate_expression(right_expr)
 
-            # If both sides are numeric literals, we can compare
-            if self.is_numeric_literal(left_code) and self.is_numeric_literal(right_code):
-                left_val = float(left_code) if '.' in left_code else int(left_code)
-                right_val = float(right_code) if '.' in right_code else int(right_code)
-                if op == "<":
-                    return left_val < right_val
-                elif op == ">":
-                    return left_val > right_val
-                elif op == "<=":
-                    return left_val <= right_val
-                elif op == ">=":
-                    return left_val >= right_val
-                elif op == "==":
-                    return left_val == right_val
-                elif op == "!=":
-                    return left_val != right_val
+        if not self.is_numeric_literal(left_code) or not self.is_numeric_literal(right_code):
+            return None
 
-        # If not handled, return None indicating we can't determine at compile time
+        left_val = float(left_code) if '.' in left_code else int(left_code)
+        right_val = float(right_code) if '.' in right_code else int(right_code)
+
+        return self.compare_relational(left_val, right_val, op)
+
+    def compare_relational(self, left_val, right_val, op):
+        if op == "<":
+            return left_val < right_val
+        elif op == ">":
+            return left_val > right_val
+        elif op == "<=":
+            return left_val <= right_val
+        elif op == ">=":
+            return left_val >= right_val
+        elif op == "==":
+            return left_val == right_val
+        elif op == "!=":
+            return left_val != right_val
         return None
 
     def map_type(self, expr_type):
@@ -368,7 +364,7 @@ class CodeGenerator:
             return "float"
         return "int"
 
-    def append_code(self, line, in_main=False):
+    def append_code(self, line, in_main):
         if self.in_function_definition:
             self.main_code += self.indent() + line
         else:
@@ -387,7 +383,6 @@ class CodeGenerator:
                 val = left_val * right_val
             elif op == '/':
                 if right_val == 0:
-                    # Can't fold division by zero
                     return (f"({left_code} {op} {right_code})", result_type)
                 val = left_val / right_val if result_type == "float" else left_val // right_val
             else:
