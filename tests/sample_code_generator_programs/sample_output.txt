@@ -1,0 +1,147 @@
+code_generator.sh sample output:
+output .c files stored in ./output_c_files/
+
+sample1.litel -> sample1.c:
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    int arr[] = {1, 2, 3, 4};
+    int x = -20;
+    int i = 0;
+    while ((i < 4)) {
+        printf("%d\n", arr[i]);
+        i = (i + 1);
+    }
+    return 0;
+}
+
+Terminal output:
+1
+2
+3
+4
+
+
+sample2.litel -> sample2.c:
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    double pi = 3.14;
+    char* greetings[] = {"hello", "world"};
+    char* msg = "";
+    msg = greetings[0];
+    printf("%s\n", msg);
+    double val = (pi * 2.0);
+    printf("%f\n", val);
+    return 0;
+}
+
+Terminal output:
+hello
+6.280000
+
+
+sample3.litel -> sample3.c:
+#include <stdio.h>
+#include <string.h>
+
+int haha(int x, int y) {
+    x = (x + 1);
+    y = (y + x);
+    return y;
+}
+
+int main() {
+    int x = 10;
+    int n = (haha(x, 5) + 10);
+    printf("%d\n", n);
+    return 0;
+}
+
+Terminal output:
+26
+
+
+sample4.litel -> sample4.c:
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    int x = 0;
+    if ((x > 20)) {
+        printf("%s\n", "x is greater than 20");
+    }
+    else {
+        printf("%s\n", "x is less than 20");
+    }
+    if ((x < 20)) {
+        printf("%s\n", "x is less than 20");
+    }
+    else {
+        printf("%s\n", "x is greater than 20");
+    }
+    return 0;
+}
+
+Terminal output:
+x is less than 20
+x is less than 20
+
+
+sample5.litel -> sample5.c:
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    int x = 0;
+    while ((x > 5)) {
+        printf("%s\n", "x is: ");
+        printf("%d\n", x);
+        x = (x + 1);
+    }
+    while ((x < 5)) {
+        printf("%s\n", "x is: ");
+        printf("%d\n", x);
+        int y = -2;
+        while ((y < 0)) {
+            printf("%s\n", "y is : ");
+            printf("%d\n", y);
+            y = (y + 1);
+        }
+        x = (x + 1);
+    }
+    return 0;
+}
+
+x is:
+0
+y is :
+-2
+y is :
+-1
+x is:
+1
+y is :
+-2
+y is :
+-1
+x is:
+2
+y is :
+-2
+y is :
+-1
+x is:
+3
+y is :
+-2
+y is :
+-1
+x is:
+4
+y is :
+-2
+y is :
+-1

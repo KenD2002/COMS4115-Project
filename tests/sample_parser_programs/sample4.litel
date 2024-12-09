@@ -1,0 +1,10 @@
+make x assign 10;
+
+def haha(x, y)
+{
+    x assign x add 1;
+    y assign y add x;
+    return y;
+}
+
+make n assign call haha(x, 5) add 10;

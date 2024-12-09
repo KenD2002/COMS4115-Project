@@ -9,17 +9,13 @@ class CodeGenerator:
         self.indent_level = 1
         self.variables = {}
         self.function_return_type = {}
-        self.current_function_return_type = None
         self.in_function_definition = False
+        self.current_function_return_type = None
 
     def indent(self):
         return "    " * self.indent_level
 
     def generate_code(self):
-        """
-        Traverses the AST and generates C code.
-        The AST root is expected to be {"Program": [...] }.
-        """
         if "Program" not in self.ast:
             raise Exception("AST does not have a Program node.")
         program_body = self.ast["Program"]
@@ -35,9 +31,6 @@ class CodeGenerator:
         return c_code
 
     def visit(self, node, in_main=False):
-        """
-        Visit a node. Each node is a dict with one key as the node type.
-        """
         if not isinstance(node, dict):
             raise Exception(f"Node is not a dict: {node}")
         if len(node.keys()) != 1:
@@ -87,10 +80,8 @@ class CodeGenerator:
         self.append_code(line, in_main)
 
     def visit_Output(self, node, in_main):
-        # {"Output": expr}
         expr = node
         expr_code, expr_type = self.generate_expression(expr)
-        # Choose format specifier based on expr_type
         if expr_type == "int":
             line = f'printf("%d\\n", {expr_code});\n'
         elif expr_type == "float":
@@ -98,25 +89,18 @@ class CodeGenerator:
         elif expr_type == "string":
             line = f'printf("%s\\n", {expr_code});\n'
         else:
-            # Unknown type, print as string
             line = f'printf("%s\\n", {expr_code});\n'
-
         self.append_code(line, in_main)
 
     def visit_Return(self, node, in_main):
         expr = node
         expr_code, expr_type = self.generate_expression(expr)
-
         if self.in_function_definition:
             if self.current_function_return_type is None:
-                # First return sets the return type
                 self.current_function_return_type = expr_type
             else:
-                # Ensure consistent return type
                 if self.current_function_return_type != expr_type:
-                    raise Exception("Error: Multiple return types in the function body are not consistent.")
-
-            # Check if array return
+                    raise Exception("Error: Multiple return types in function body are not consistent.")
             if "[]" in self.current_function_return_type:
                 raise Exception("Error: Returning arrays is not allowed.")
 
@@ -124,7 +108,6 @@ class CodeGenerator:
         self.append_code(line, in_main)
 
     def visit_FunctionCallStatement(self, node, in_main):
-        # {"FunctionCallStatement": {"Name": ..., "Arguments": ...}}
         func_call = node
         func_name = func_call["Name"]
         args = func_call["Arguments"]
@@ -171,61 +154,57 @@ class CodeGenerator:
         self.append_code("}\n", in_main)
 
     def visit_FunctionDef(self, node, in_main):
-        # {"FunctionDef": {"Name": ..., "Parameters": [...], "Body": ...}}
         func_name = node["Name"]
         parameters = node["Parameters"]
         body = node["Body"]
 
-        # Track that we are in a function definition
-        self.in_function_definition = True
-        self.current_function_return_type = None
-
-        # Assume int params for now (no type inference for params)
-        params_code = ", ".join([f"int {p}" for p in parameters])
-
         old_main_code = self.main_code
         old_indent = self.indent_level
         old_variables = self.variables.copy()
+        old_in_function = self.in_function_definition
+        old_return_type = self.current_function_return_type
 
-        self.main_code = ""  # Reuse main_code as scratch for function body
+        self.main_code = ""
         self.indent_level = 1
         self.variables = {}
+        self.in_function_definition = True
+        self.current_function_return_type = None
+        params_code = ", ".join([f"int {p}" for p in parameters])
 
         for stmt in body["Block"]:
             self.visit(stmt, in_main=False)
 
-        # Determine final return type
         if self.current_function_return_type is None:
-            # No return found, default to int
             self.current_function_return_type = "int"
-            # Append return 0 if no explicit return
-            if not self.main_code.strip().endswith("}\n") and "return" not in self.main_code:
+            if "return" not in self.main_code:
                 self.main_code += f"{self.indent()}return 0;\n"
-        else:
-            if "[]" in self.current_function_return_type:
-                raise Exception(f"Error: Function '{func_name}' returns an array, which is not allowed.")
 
-        # Map to C type
+        if "[]" in self.current_function_return_type:
+            raise Exception(f"Error: Function '{func_name}' returns an array, which is not allowed.")
+
         c_return_type = self.map_type(self.current_function_return_type)
-
         func_code = f"{c_return_type} {func_name}({params_code}) {{\n"
         func_code += self.main_code
         func_code += "}\n\n"
 
         self.function_return_type[func_name] = self.current_function_return_type
+
         self.main_code = old_main_code
         self.indent_level = old_indent
         self.variables = old_variables
-        self.in_function_definition = False
+        self.in_function_definition = old_in_function
+        self.current_function_return_type = old_return_type
+
         self.functions_code += func_code
 
     def visit_EmptyStatement(self, node, in_main):
         self.append_code(";\n", in_main)
 
-    def generate_expression(self, expr):
-        if not isinstance(expr, dict):
-            raise Exception(f"Expression node is not a dict: {expr}")
+    def visit_Block(self, node, in_main):
+        for stmt in node["Block"]:
+            self.visit(stmt, in_main)
 
+    def generate_expression(self, expr):
         node_type = list(expr.keys())[0]
         node_value = expr[node_type]
 
@@ -246,7 +225,6 @@ class CodeGenerator:
             ident = node_value["Identifier"]
             index_expr = node_value["Index"]
             index_code, _ = self.generate_expression(index_expr)
-            # Assume int array
             return (f"{ident}[{index_code}]", "int")
         elif node_type == "FunctionCall":
             func_name = node_value["Name"]
@@ -255,7 +233,6 @@ class CodeGenerator:
             for arg in args:
                 arg_code, _ = self.generate_expression(arg)
                 args_code.append(arg_code)
-            # Determine function return type if known
             ret_type = self.function_return_type.get(func_name, "int")
             return (f"{func_name}({', '.join(args_code)})", ret_type)
         elif node_type == "Term":
@@ -264,14 +241,16 @@ class CodeGenerator:
             right_node = node_value["Right"]
             left_code, left_type = self.generate_expression(left_node)
             right_code, right_type = self.generate_expression(right_node)
-            return (f"({left_code} {op} {right_code})", self.pick_numeric_type(left_type, right_type))
+            result_type = self.pick_numeric_type(left_type, right_type)
+            return self.constant_fold(left_code, right_code, op, result_type)
         elif node_type == "ArithmeticExpression":
             left_node = node_value["Left"]
             op = node_value["Operator"]
             right_node = node_value["Right"]
             left_code, left_type = self.generate_expression(left_node)
             right_code, right_type = self.generate_expression(right_node)
-            return (f"({left_code} {op} {right_code})", self.pick_numeric_type(left_type, right_type))
+            result_type = self.pick_numeric_type(left_type, right_type)
+            return self.constant_fold(left_code, right_code, op, result_type)
         elif node_type == "RelationalExpression":
             left_node = node_value["Left"]
             op = node_value["Operator"]
@@ -283,6 +262,13 @@ class CodeGenerator:
             op = node_value["Operator"]
             operand = node_value["Operand"]
             operand_code, operand_type = self.generate_expression(operand)
+            if op == '-' and self.is_numeric_literal(operand_code):
+                if '.' in operand_code:
+                    val = float(operand_code)
+                    return (str(-val), operand_type)
+                else:
+                    val = int(operand_code)
+                    return (str(-val), operand_type)
             return (f"({op}{operand_code})", operand_type)
         elif node_type == "ListExpression":
             element_type = node_value["Type"]
@@ -291,47 +277,70 @@ class CodeGenerator:
             for elem in elements:
                 elem_code, elem_type = self.generate_expression(elem)
                 c_elements.append(elem_code)
-
             c_type = self.map_type(element_type)
-            return (c_elements, c_type + "[]")  # indicate array type
+            return (c_elements, c_type + "[]")
         else:
             raise Exception(f"Unknown expression node type: {node_type}")
-
-    def visit_Block(self, node, in_main):
-        for stmt in node["Block"]:
-            self.visit(stmt, in_main)
 
     def map_type(self, expr_type):
         if expr_type == "int":
             return "int"
         elif expr_type == "float":
-            return "double"  # use double for float in C
+            return "double"
         elif expr_type == "string":
             return "char*"
         else:
-            # Just return int for unknown
             return "int"
 
     def reverse_map_type(self, c_type):
-        if c_type in ["int"]:
+        if c_type == "int":
             return "int"
-        elif c_type in ["double"]:
+        elif c_type == "double":
             return "float"
-        elif c_type in ["char*"]:
+        elif c_type == "char*":
             return "string"
         return "int"
 
     def pick_numeric_type(self, left_type, right_type):
-        # If either is float, result is float, else int
         if left_type == "float" or right_type == "float":
             return "float"
         return "int"
 
     def append_code(self, line, in_main):
-        if in_main and not self.in_function_definition:
+        if self.in_function_definition:
             self.main_code += self.indent() + line
         else:
             self.main_code += self.indent() + line
+
+    def constant_fold(self, left_code, right_code, op, result_type):
+        if self.is_numeric_literal(left_code) and self.is_numeric_literal(right_code):
+            left_val = float(left_code) if '.' in left_code else int(left_code)
+            right_val = float(right_code) if '.' in right_code else int(right_code)
+
+            if op == '+':
+                val = left_val + right_val
+            elif op == '-':
+                val = left_val - right_val
+            elif op == '*':
+                val = left_val * right_val
+            elif op == '/':
+                if right_val == 0:
+                    return (f"({left_code} {op} {right_code})", result_type)
+                val = left_val / right_val if result_type == "float" else left_val // right_val
+            else:
+                return (f"({left_code} {op} {right_code})", result_type)
+
+            if result_type == "int":
+                val = int(val)
+            return (str(val), result_type)
+        else:
+            return (f"({left_code} {op} {right_code})", result_type)
+
+    def is_numeric_literal(self, code_str):
+        clean = code_str.strip("()")
+        if clean.startswith('-'):
+            clean = clean[1:]
+        return clean.replace('.', '', 1).isdigit()
 
 if __name__ == "__main__":
     ast = json.load(sys.stdin)

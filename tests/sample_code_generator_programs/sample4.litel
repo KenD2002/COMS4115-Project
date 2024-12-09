@@ -1,0 +1,19 @@
+make x assign 0 add (1 add (2 subtract 3)) multiply 4; // constant folding x is 0
+
+if (x greater_than 20)  // always false, dead code elimination
+{
+    shout ("x is greater than 20");
+}
+else
+{
+    shout ("x is less than 20");
+}
+
+if (x less_than 20)
+{
+    shout ("x is less than 20");
+}
+else // if part always true, dead code elimination
+{
+    shout ("x is greater than 20");
+}

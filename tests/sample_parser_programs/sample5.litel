@@ -1,0 +1,1 @@
+make x assign 0 add (1 add (2 subtract 3)) multiply 4;

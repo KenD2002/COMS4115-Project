@@ -1,0 +1,7 @@
+make pi assign 3.14;
+make greetings assign ["hello", "world"];
+make msg assign "";
+msg assign greetings[0];
+shout(msg);
+make val assign pi multiply 2.0;
+shout(val);

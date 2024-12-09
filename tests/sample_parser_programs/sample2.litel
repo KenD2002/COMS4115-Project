@@ -1,0 +1,8 @@
+make x assign 5.00;
+make y assign 10.00;
+
+shout("The value of x is: ");
+shout(x);
+
+shout("The value of y is: ");
+shout(y);

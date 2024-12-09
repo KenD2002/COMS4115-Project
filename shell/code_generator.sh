@@ -7,6 +7,9 @@ if [ "$#" -ne 1 ]; then
 fi
 
 INPUT_FILE=$1
+BASENAME=$(basename "$INPUT_FILE" .litel)
+OUTPUT_DIR=./output_c_files
+C_FILE="$OUTPUT_DIR/$BASENAME.c"
 
 # Step 1: Run Lexer
 TOKENS=$(./shell/lexer.sh "$INPUT_FILE" 2>&1)
@@ -39,5 +42,26 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# If everything succeeded, print only the generated C code
-echo "$CODE"
+# Create output directory if it doesn't exist
+mkdir -p "$OUTPUT_DIR"
+
+# Remove old .c file if exists
+if [ -f "$C_FILE" ]; then
+    rm "$C_FILE"
+fi
+
+# Write the new C code to the .c file
+echo "$CODE" > "$C_FILE"
+
+# Compile the generated C code
+gcc -o "$OUTPUT_DIR/${BASENAME}_a.out" "$C_FILE"
+if [ $? -ne 0 ]; then
+    >&2 echo "Error: Compilation failed."
+    exit 1
+fi
+
+# Run the compiled program and display its output
+"$OUTPUT_DIR/${BASENAME}_a.out"
+
+# Remove the compiled binary so that only the .c file remains
+rm "$OUTPUT_DIR/${BASENAME}_a.out"
