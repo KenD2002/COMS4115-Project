@@ -2,8 +2,9 @@
 #include <string.h>
 
 int main() {
+    int x = 0;
+    printf("%d\n", x);
     int arr[] = {1, 2, 3, 4};
-    int x = -20;
     int i = 0;
     while ((i < 4)) {
         printf("%d\n", arr[i]);

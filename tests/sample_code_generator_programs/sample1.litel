@@ -1,8 +1,9 @@
+make x assign 0 add (1 add (2 subtract 3)) multiply 4; // constant folding x is 0
+shout(x);
+
 make arr assign [1, 2, 3, 4];
-make x assign 0 add subtract 20;
 make i assign 0;
 check(i less_than 4) {
     shout(arr[i]);
     i assign i add 1;
 }
-

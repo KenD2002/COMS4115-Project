@@ -1,18 +1,11 @@
 make x assign 0;
 
-check (x greater_than 5)
-{
-    shout("x is: ");
-    shout(x);
-    x assign x add 1;
-}
-
 check (x less_than 5)
 {
     shout("x is: ");
     shout(x);
     make y assign subtract 2;
-    check (y less_than 0)
+    check (1 less_than 0) // dead code elimination here
     {
         shout("y is : ");
         shout(y);

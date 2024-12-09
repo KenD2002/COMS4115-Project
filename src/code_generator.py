@@ -43,7 +43,7 @@ class CodeGenerator:
         return visitor(node_value, in_main)
 
     def generic_visit(self, node_value, in_main):
-        raise Exception(f"No visitor method defined for this node type or unexpected node: {node_value}")
+        raise Exception(f"No visitor method defined for {node_value}")
 
     def visit_VarDeclaration(self, node, in_main):
         identifier = node["Identifier"]
@@ -123,35 +123,57 @@ class CodeGenerator:
         then_block = node["Then"]
         else_block = node["Else"]
 
-        cond_code, _ = self.generate_expression(condition)
-
-        line = f"if ({cond_code}) {{\n"
-        self.append_code(line, in_main)
-        self.indent_level += 1
-        for stmt in then_block["Block"]:
-            self.visit(stmt, in_main)
-        self.indent_level -= 1
-        self.append_code("}\n", in_main)
-
-        if else_block is not None:
-            self.append_code("else {\n", in_main)
+        dce_result = self.evaluate_if_condition(condition)
+        if dce_result is True:
+            for stmt in then_block["Block"]:
+                self.visit(stmt, in_main)
+        elif dce_result is False:
+            if else_block is not None:
+                for stmt in else_block["Block"]:
+                    self.visit(stmt, in_main)
+        else:
+            cond_code, _ = self.generate_expression(condition)
+            line = f"if ({cond_code}) {{\n"
+            self.append_code(line, in_main)
             self.indent_level += 1
-            for stmt in else_block["Block"]:
+            for stmt in then_block["Block"]:
                 self.visit(stmt, in_main)
             self.indent_level -= 1
             self.append_code("}\n", in_main)
 
+            if else_block is not None:
+                self.append_code("else {\n", in_main)
+                self.indent_level += 1
+                for stmt in else_block["Block"]:
+                    self.visit(stmt, in_main)
+                self.indent_level -= 1
+                self.append_code("}\n", in_main)
+
     def visit_Loop(self, node, in_main):
         condition = node["Condition"]
         block = node["Block"]
-        cond_code, _ = self.generate_expression(condition)
-        line = f"while ({cond_code}) {{\n"
-        self.append_code(line, in_main)
-        self.indent_level += 1
-        for stmt in block["Block"]:
-            self.visit(stmt, in_main)
-        self.indent_level -= 1
-        self.append_code("}\n", in_main)
+
+        loop_result = self.evaluate_if_condition(condition)
+
+        if loop_result is True:
+            line = "while (1) {\n"
+            self.append_code(line, in_main)
+            self.indent_level += 1
+            for stmt in block["Block"]:
+                self.visit(stmt, in_main)
+            self.indent_level -= 1
+            self.append_code("}\n", in_main)
+        elif loop_result is False:
+            pass
+        else:
+            cond_code, _ = self.generate_expression(condition)
+            line = f"while ({cond_code}) {{\n"
+            self.append_code(line, in_main)
+            self.indent_level += 1
+            for stmt in block["Block"]:
+                self.visit(stmt, in_main)
+            self.indent_level -= 1
+            self.append_code("}\n", in_main)
 
     def visit_FunctionDef(self, node, in_main):
         func_name = node["Name"]
@@ -281,6 +303,42 @@ class CodeGenerator:
             return (c_elements, c_type + "[]")
         else:
             raise Exception(f"Unknown expression node type: {node_type}")
+
+    def evaluate_if_condition(self, condition):
+        node_type = list(condition.keys())[0]
+        if node_type != "RelationalExpression":
+            return None
+
+        node_value = condition[node_type]
+        op = node_value["Operator"]
+        left_expr = node_value["Left"]
+        right_expr = node_value["Right"]
+
+        left_code, left_type = self.generate_expression(left_expr)
+        right_code, right_type = self.generate_expression(right_expr)
+
+        if not self.is_numeric_literal(left_code) or not self.is_numeric_literal(right_code):
+            return None
+
+        left_val = float(left_code) if '.' in left_code else int(left_code)
+        right_val = float(right_code) if '.' in right_code else int(right_code)
+
+        return self.compare_relational(left_val, right_val, op)
+
+    def compare_relational(self, left_val, right_val, op):
+        if op == "<":
+            return left_val < right_val
+        elif op == ">":
+            return left_val > right_val
+        elif op == "<=":
+            return left_val <= right_val
+        elif op == ">=":
+            return left_val >= right_val
+        elif op == "==":
+            return left_val == right_val
+        elif op == "!=":
+            return left_val != right_val
+        return None
 
     def map_type(self, expr_type):
         if expr_type == "int":
