@@ -215,7 +215,7 @@ This project uses Recursive Descent Parser.
 - **FloatLiteral**
 - **StringLiteral**
 
---
+---
 
 ## Code Generation
 
