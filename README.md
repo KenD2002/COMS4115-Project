@@ -215,6 +215,43 @@ This project uses Recursive Descent Parser.
 - **FloatLiteral**
 - **StringLiteral**
 
+--
+
+## Code Generation
+
+During this step, the AST is traversed, and equivalent C code is produced. The generated code is then written into a .c file, ready for compilation with any standard C compiler.
+
+
+### Key Features of Code Generation
+
+1. Type Inference for Functions
+   - The code generator inspects all `return` statements within a function body to infer the return type.
+   - Functions default to `int` if no return statement is found.
+   - Functions returning strings are emitted as `char*`, and those returning floating-point values are emitted as `double`.
+
+2. Variable and List Declarations
+   - LiteLang variables are mapped to corresponding C types:
+   - Integers -> `int`
+   - Floating-point numbers -> `double`
+   - Strings -> `char*`
+
+3. Expression and Operator Translation
+   - Arithmetic, relational, and boolean expressions are translated to their equivalent C syntax. For instance:
+   - `assign` -> `=`
+   - `add` -> `+`
+   - `less_than` -> `<`
+   - To represent negative values, LiteLang uses unary subtract (e.g., `subtract 20` is equivalent to `-20` in C). This ensures consistency with the language's operator-based syntax.
+
+4. Control Structures and Functions
+   - LiteLang conditionals (`if` / `else`) and loops (`check`) are translated to C's `if` / `else` and `while` constructs.
+   - Functions are translated into C functions, with parameters defaulting to `int` unless explicitly typed. Return types are inferred as described above.
+
+5. Dead Code Elimination
+   - Constructs such as unreachable code (e.g., lines following a `return` statement) are omitted during code generation.
+   - This simple dead code removal helps keep the generated code clean and efficient.
+
+6. C File Output
+   - Once code generation is complete, the generated C code is written into a `.c` file. This file can be compiled using standard C compilers to produce an executable.
 
 ---
 
@@ -230,28 +267,33 @@ Before you can run LiteLang, make sure you have the following installed on your 
 
 1. **Python 3.x** (for running the LiteLang interpreter)
 
-2. **GCC or Clang** (for compiling the generated C code)
+2. **GCC** (for compiling the generated C code)
 
 
-To run the lexer or parser, change the current working directory to the root directory of the project.
+To run the lexer or parser, change the current working directory to the ***root directory*** of the project.
 
 
-Then, make sure to make `lexer.sh` and `parser.sh` script file executable by
+Then, make sure to make `lexer.sh`, `parser.sh`, and `code_generator.sh` script files executable by
 
 `chmod +x ./shell/lexer.sh`
 
 `chmod +x ./shell/parser.sh`
 
+`chmod +x ./shell/code_generator.sh`
+
 
 Then you can execute the lexer on files with `.litel` extension, and the result shall be output to your terminal. You can execute it by
 
 `./shell/lexer.sh <source_file.litel>` or
-`./shell/parser.sh <source_file.litel>`
+`./shell/parser.sh <source_file.litel>` or
+`./shell/code_generator.sh <source_file.litel>`
 
 
 To output the result into a file, you can use `>` or  `>>` to redirect stdout by
 
 `./shell/lexer.sh <source_file.litel> > <destination_file>` or
-`./shell/parser.sh <source_file.litel> > <destination_file>`
+`./shell/parser.sh <source_file.litel> > <destination_file>` or 
+`./shell/code_generator.sh <source_file.litel>`
 
-Example `.litel` files and their expected outputs are located in the `./tests/sample_programs` directory.
+Example `.litel` files and their expected outputs are located in the `./tests/` directory. 
+Generated `.c` files are located in `./output_c_files`.
