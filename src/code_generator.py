@@ -4,12 +4,12 @@ import json
 class CodeGenerator:
     def __init__(self, ast):
         self.ast = ast
-        self.main_code = ""       # Code that will go into main()
-        self.functions_code = ""  # Code for user-defined function definitions
-        self.indent_level = 1     # For formatting the generated C code
-        self.variables = {}       # Track variables and their types in the current scope
-        self.function_return_type = {}  # Track return types for functions
-        self.current_function_return_type = None  # Temporarily track function return type during definition
+        self.main_code = ""
+        self.functions_code = ""
+        self.indent_level = 1
+        self.variables = {}
+        self.function_return_type = {}
+        self.current_function_return_type = None
         self.in_function_definition = False
 
     def indent(self):
@@ -24,16 +24,11 @@ class CodeGenerator:
             raise Exception("AST does not have a Program node.")
         program_body = self.ast["Program"]
 
-        # Generate code for top-level statements (not function definitions) into main_code
-        # and function definitions into functions_code.
         for stmt in program_body:
             self.visit(stmt, in_main=True)
 
-        # Wrap up the final code
-        # User-defined functions are in self.functions_code, main code in self.main_code
         c_code = "#include <stdio.h>\n#include <string.h>\n\n"
         c_code += self.functions_code
-        # The main function remains int main() { ... return 0; }
         c_code += "int main() {\n"
         c_code += self.main_code
         c_code += "    return 0;\n}\n"
@@ -63,8 +58,6 @@ class CodeGenerator:
         expr_code, expr_type = self.generate_expression(expr)
 
         if isinstance(expr_code, list):
-            # We got a list of elements -> array
-            # For variable declarations, arrays are allowed, just store as C arrays
             base_type = expr_type.replace("[]", "")
             line = f"{base_type} {identifier}[] = {{{', '.join(expr_code)}}};\n"
             self.variables[identifier] = base_type
@@ -114,8 +107,6 @@ class CodeGenerator:
         expr = node
         expr_code, expr_type = self.generate_expression(expr)
 
-        # We are in a function definition if self.in_function_definition is True.
-        # Infer return type
         if self.in_function_definition:
             if self.current_function_return_type is None:
                 # First return sets the return type
@@ -211,8 +202,6 @@ class CodeGenerator:
             if not self.main_code.strip().endswith("}\n") and "return" not in self.main_code:
                 self.main_code += f"{self.indent()}return 0;\n"
         else:
-            # Return type already determined by return statements
-            # Check no array
             if "[]" in self.current_function_return_type:
                 raise Exception(f"Error: Function '{func_name}' returns an array, which is not allowed.")
 
@@ -224,15 +213,10 @@ class CodeGenerator:
         func_code += "}\n\n"
 
         self.function_return_type[func_name] = self.current_function_return_type
-
-        # Restore states
         self.main_code = old_main_code
         self.indent_level = old_indent
         self.variables = old_variables
-
-        # No longer in a function definition
         self.in_function_definition = False
-
         self.functions_code += func_code
 
     def visit_EmptyStatement(self, node, in_main):
@@ -344,14 +328,9 @@ class CodeGenerator:
         return "int"
 
     def append_code(self, line, in_main):
-        # If in_main is True, we append to main_code
-        # If in_function_definition is True, we append to function body (main_code used as scratch)
-        # Otherwise, it's top-level code into main (which is unusual).
         if in_main and not self.in_function_definition:
             self.main_code += self.indent() + line
         else:
-            # When generating code inside a function definition, we are using main_code as a scratch area
-            # So always append to self.main_code when in_function_definition is True
             self.main_code += self.indent() + line
 
 if __name__ == "__main__":
