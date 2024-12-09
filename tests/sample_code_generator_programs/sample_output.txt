@@ -145,3 +145,7 @@ y is :
 -2
 y is :
 -1
+
+
+sample6.litel:
+Error: Lexical error detected. Aborting.
