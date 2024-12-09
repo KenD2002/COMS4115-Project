@@ -1,5 +1,6 @@
 import sys
 import re
+import json
 
 class Parser:
     def __init__(self, tokens):
@@ -306,44 +307,60 @@ class Parser:
             return "unknown"
 
     def format_ast(self, node, prefix="", is_root=True):
+        # Print the AST in a formatted way to stderr
         if isinstance(node, dict):
             for i, (key, value) in enumerate(node.items()):
                 is_last = i == len(node) - 1
                 if is_root:
-                    print(f"{key}")
+                    print(f"{key}", file=sys.stderr)
                     self.format_ast(value, prefix, is_root=False)
                 else:
-                    print(f"{prefix}{'└── ' if is_last else '├── '}{key}")
+                    print(f"{prefix}{'└── ' if is_last else '├── '}{key}", file=sys.stderr)
                     self.format_ast(value, prefix + ("    " if is_last else "│   "), is_root=False)
         elif isinstance(node, list):
             for i, item in enumerate(node):
                 is_last = i == len(node) - 1
-                print(f"{prefix}{'└── ' if is_last else '├── '}{'List Item'}")
+                print(f"{prefix}{'└── ' if is_last else '├── '}{'List Item'}", file=sys.stderr)
                 self.format_ast(item, prefix + ("    " if is_last else "│   "), is_root=False)
         else:
-            print(f"{prefix}{'└── '}{node}")
+            print(f"{prefix}{'└── '}{node}", file=sys.stderr)
 
 def main():
     tokens = []
-    for line in sys.stdin:
-        match = re.match(r"<([^,]+),\s*(.+)>", line.strip())
-        if match:
-            token_type = match.group(1)
-            token_value = match.group(2).strip()
-            tokens.append((token_type, token_value))
-        else:
-            print("Error: Incorrect token format in tokens input.")
-            sys.exit(1)
-
-    parser = Parser(tokens)
     try:
+        # Read tokens from stdin
+        for line in sys.stdin:
+            match = re.match(r"<([^,]+),\s*(.+)>", line.strip())
+            if match:
+                token_type = match.group(1)
+                token_value = match.group(2).strip()
+                tokens.append((token_type, token_value))
+            else:
+                print(f"Invalid token format: {line.strip()}", file=sys.stderr)
+                sys.exit(1)
+
+        # Parse tokens into AST
+        parser = Parser(tokens)
         ast = parser.parse()
-        print("Formatted AST:")
+
+        # Debug output to stderr
+        print("Formatted AST:", file=sys.stderr)
         parser.format_ast(ast)
-        print("\n\nAST:")
-        print(ast)
+        print("\n\nAST:", file=sys.stderr)
+        #print(ast, file=sys.stderr)
+
+        # Serialize AST to JSON and print to stdout (for code generator)
+        json_output = json.dumps(ast, indent=4)
+        print(json_output)
+        sys.stdout.flush()  # Ensure all output is written before exit
+
     except SyntaxError as e:
-        print(f"Syntax Error: {e}")
+        print(f"Syntax Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Unexpected Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
